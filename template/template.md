@@ -598,6 +598,61 @@ struct ModInt{
 
 ## STRING SUFFIX STRUCTURE
 
+### AC automata
+
+```c++
+int sz,ch[M][26],f[M],cnt[M];
+void init()
+{
+	sz = 1;
+	memset(ch[0],0,sizeof(ch[0]));
+	cnt[0] = 0;
+}
+void insert(const string&s)
+{
+	int len = s.length();
+	int u = 0;
+	for(int i = 0;i<len;i++){
+		int c = s[i]-'a';
+		if(!ch[u][c]){
+			memset(ch[sz],0,sizeof(ch[sz]));
+			cnt[sz] = 0;
+			ch[u][c] = sz++;
+		}
+		u = ch[u][c];
+	}
+	++cnt[u];
+}
+void getfail()
+{
+	queue<int>q;
+	f[0] = 0;
+	for(int c = 0;c<26;c++){
+		int u = ch[0][c];
+		if(u){
+			f[u] = 0;
+			q.push(u);
+		}
+	}
+	while(q.size()){
+		int r = q.front();q.pop();
+		for(int c = 0;c<26;c++){
+			int u = ch[r][c];
+			if(!u){
+				ch[r][c] = ch[f[r]][c];continue;
+			} 
+			q.push(u);
+			int v = f[r];
+			while(v && !ch[v][c])v = f[v];
+			f[u] = ch[v][c];
+			cnt[u]+=cnt[f[u]];
+		}
+	}
+}
+```
+
+
+
 ### SA
 
 有超时风险（1e6 700ms）
@@ -639,7 +694,7 @@ void suffix_array(string s){
 }
 ```
 
-### SAM
+
 
 ## NTT (POLY)
 
