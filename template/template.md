@@ -1,26 +1,3 @@
-# dp
-
-构造。
-
-dp的边界条件可以不在循环的头中显性表示，而是通过**初始化**时的 INF -INF 加上 if continue语句简化处理。
-
-dp的寻找构造一般不包含无穷的情况（概率dp）
-
-# binary search
-
-
-
-寻找边界任务：对于左边 < , 右边 > :
-
-```c++
-int l = 1,r = n;
-while(l<r-1){ //条件如下，否则进入死循环
-	int mid = (l+r)>>1;//尽量用这个>>而不是除
-    if(check(mid)==left)l = mid
-    else r = mid
-}
-```
-
 # graph
 
 ## shortest path
@@ -146,21 +123,6 @@ void tarjan(int u)
 ```
 
 
-
-# game theory
-
-
-
-## sg fucntion
-
-[博弈论 | 详解搞定组合博弈问题的SG函数 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/157731188)
-$$
-\text{SG}(S) = \text{mex}\left(\{\text{SG}(T) \mid T \text{ is a valid next position from } S\}\right)
-$$
-通常通过子问题的异或得到最终的结果。
-$$
-\text{SG}(S_1 + S_2) = \text{SG}(S_1) \oplus \text{SG}(S_2)
-$$
 
 
 # number theory
@@ -336,10 +298,6 @@ int main()
 ```
 
 
-
-# constructive 
-
-think with balls , use counter example or proofs to testify.
 
 # tools
 
@@ -677,6 +635,61 @@ struct ModInt{
 
 ## STRING SUFFIX STRUCTURE
 
+### AC automata
+
+```c++
+int sz,ch[M][26],f[M],cnt[M];
+void init()
+{
+	sz = 1;
+	memset(ch[0],0,sizeof(ch[0]));
+	cnt[0] = 0;
+}
+void insert(const string&s)
+{
+	int len = s.length();
+	int u = 0;
+	for(int i = 0;i<len;i++){
+		int c = s[i]-'a';
+		if(!ch[u][c]){
+			memset(ch[sz],0,sizeof(ch[sz]));
+			cnt[sz] = 0;
+			ch[u][c] = sz++;
+		}
+		u = ch[u][c];
+	}
+	++cnt[u];
+}
+void getfail()
+{
+	queue<int>q;
+	f[0] = 0;
+	for(int c = 0;c<26;c++){
+		int u = ch[0][c];
+		if(u){
+			f[u] = 0;
+			q.push(u);
+		}
+	}
+	while(q.size()){
+		int r = q.front();q.pop();
+		for(int c = 0;c<26;c++){
+			int u = ch[r][c];
+			if(!u){
+				ch[r][c] = ch[f[r]][c];continue;
+			} 
+			q.push(u);
+			int v = f[r];
+			while(v && !ch[v][c])v = f[v];
+			f[u] = ch[v][c];
+			cnt[u]+=cnt[f[u]];
+		}
+	}
+}
+```
+
+
+
 ### SA
 
 有超时风险（1e6 700ms）
@@ -718,7 +731,7 @@ void suffix_array(string s){
 }
 ```
 
-### SAM
+
 
 ## NTT (POLY)
 
@@ -1093,70 +1106,18 @@ ll exgcd(ll a,ll b,ll &x,ll &y)
 
 # idle
 
-顺序vector求区间内的值，如[l,r] (前提是vector需要排好序)
+## game theory
 
-```c++
-upper_bound(v.begin(),v.end(),r)-lower_bound(v.begin(),v.end(),l);
-```
+### sg fucntion
 
-
-
-
-
-quick ways to get the intverval of same value of the function 
+[博弈论 | 详解搞定组合博弈问题的SG函数 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/157731188)
 $$
-f(x) = [\frac{n}{x}] ~~~~~~~~~x = {1,2,...,n}
+\text{SG}(S) = \text{mex}\left(\{\text{SG}(T) \mid T \text{ is a valid next position from } S\}\right)
+$$
+通常通过子问题的异或得到最终的结果。
+$$
+\text{SG}(S_1 + S_2) = \text{SG}(S_1) \oplus \text{SG}(S_2)
 $$
 
-```c++
-vector<pair<int,int>>p;
-for (int left = 1, right; left < n; left = right + 1){
-    int C = (n + left - 1) / left;
-    right = (n + C - 1 - 1) / (C - 1) - 1;
-    p.push_back({left,right});
-}
-```
 
-
-
-区间遍历可以使用born dead 方法可以实时检测区间的覆盖情况。
-
-
-
-##### O(N) 时间排序
-
-前提是数据大小有限，不能是1e9
-
-```c++
-int main()
-{
-    int n = 10;
-    int cnt = 10;
-    vector<int>len(cnt+1);
-    len = {1,1,6,3,2,4,5,6,7,8,9};
-    vector<int>buc(n),id(cnt);
-    for(int i = 1;i<=cnt;i++)buc[len[i]]++;
-    for(int i = 1;i<=n;i++)buc[i]+=buc[i-1];
-    for(int i = cnt;i;i--)id[buc[len[i]]--] = i;
-    //关键，len(i)<len(j),buc[len[i]]<buc[len[j]]
-    for(int i = cnt;i;i--){
-        cout<<len[id[i]]<<" ";
-    }
-}
-```
-
-
-
-pair从小到大排序后，存后缀的最大值的下标。O(n)
-
-```c++
-for(int i = n-1 ;i>=0;i--){
-    p[i] = i;
-    if(i+1<n&&val[p[i]]<val[p[i+1]]){
-        p[i] = p[i+1];
-    }
-}
-```
-
-
-
+# 
