@@ -16,3 +16,12 @@ binary_search:
 binary_search(a.begin(), a.end(), 15)
 ```
 
+
+
+如果需要用mp找最大值和第二大，
+
+用 `auto it = prev(mp.end())` instead of `auto it = mp.rbegin()` , 后者会在 prev 的时候出问题。
+
+
+
+如果直接输出 double 类精度有问题，需要 setprecision
